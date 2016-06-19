@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hello, Kipu</title>
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+    <style>
+    body { padding-top: 60px; }
+    .anchor { padding-top: 60px; margin-top: -60px; }
+    .code { width: 100% }
+    </style>
+  </head>
+  <body data-spy="scroll" data-target=".kipu-nav">
+    <nav class="navbar navbar-inverse navbar-fixed-top kipu-nav">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#main_navbar" aria-expanded="false">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">Kipu</a>
+        </div>
+        <div id="main_navbar" class="collapse navbar-collapse">
+          <ul class="nav navbar-nav visible-xs-block"></ul>
+        </div><!-- /.navbar-collapse -->
+      </div><!-- /.container-fluid -->
+    </nav>
+    <div class="container anchor">
+      <div class="row">
+        <div class="col-sm-3 hidden-xs">
+          <nav class="kipu-nav" data-spy="affix">
+            <ul class="nav nav-pills nav-stacked"></ul>
+          </nav>
+        </div>
+        <div class="col-xs-12 col-sm-9">
+          <div class="jumbotron">
+            <h1>Hello, Kipu!</h1>
+            <p>A sinatra app with two endpoints:</p>
+            <ul>
+              <li><code>/home</code> makes an ajax call to <code>/code</code> after a short countdown, parses the response, and updates the UI appropriately</li>
+              <li><code>/code</code> will iterate through the directory structure and output its contents, with proper formatting and syntax highlighting</li>
+            </ul>
+            <p><a class="btn btn-primary btn-lg" href="https://github.com/oarod/hello-kipu" role="button">View Source</a></p>
+          </div>
+          <div class="content">
+            <h2><div class="countdown text-center" data-count="3">Ready</div></h2>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="//code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+    <script>
+    var $countdown, count, timer;
+
+    $(function() {
+      $countdown = $('.countdown');
+      count = $countdown.data('count');
+
+      timer = setInterval(decrementCount, 1000);
+    });
+
+    function decrementCount() {
+      if (count <= 0) {
+        clearInterval(timer);
+        getCode();
+        return;
+      }
+      $countdown.html('<h1>' + count + '</h1>');
+      count -= 1;
+    }
+    function getCode() {
+      $countdown.html('<h1><i class="fa fa-spinner fa-spin"></i><span class="sr-only">Loading...</span></h1>');
+
+      $.get('/code', function(data) {
+        var navs = '', panels = '';
+
+        for (var index in data) {
+          var ref = data[index];
+          navs += '<li><a href="#anchor_' + index + '">' + ref.name + '</li>';
+          panels += '<div id="anchor_' + index + '" class="anchor">';
+          panels += '<div class="panel panel-default">';
+          panels += '<div class="panel-heading"><h3 class="panel-title">' + ref.name + '</h3></div>';
+          panels += '<div class="panel-body">';
+          panels += '<div class="table-responsive">' + ref.code + '</div>';
+          panels += '</div>';
+          panels += '</div>';
+          panels += '</div>';
+        }
+
+        $countdown.remove();
+
+        $('.content').append(panels);
+        $('.nav').append(navs);
+
+        $('[data-spy="scroll"]').each(function() {
+          $(this).scrollspy('refresh');
+        });
+      }, 'json');
+    }
+    </script>
+  </body>
+</html>
